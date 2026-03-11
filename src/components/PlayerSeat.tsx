@@ -21,7 +21,7 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = ({
   const angle = isTop ? (Math.PI * 3) / 2 : Math.PI / 2;
   const pushFactor = Math.abs(Math.cos(angle)); // 0 for strict top/bottom
   
-  let yOffset = isHero ? 30 : (isTop ? -2 : 0);
+  let yOffset = isHero ? 22 : (isTop ? -2 : 0);
   const cx = 50 + (42 + pushFactor * 6) * Math.cos(angle);
   const cy = 50 + (38 + pushFactor * 5) * Math.sin(angle) + yOffset;
   
@@ -40,7 +40,7 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = ({
     <React.Fragment>
        {/* Current Bet (Chips) */}
        {player.currentBet > 0 && (
-          <div className={`absolute flex flex-col items-center justify-center -translate-x-1/2 -translate-y-1/2 z-10 transition-all ${isFolded ? 'opacity-70' : ''}`} style={{ left: `${50 + (27 + pushFactor * 8) * Math.cos(angle)}%`, top: `${50 + (20 + pushFactor * 8) * Math.sin(angle) + (isHero ? 5 : (isTop ? -5 : 0))}%` }}>
+          <div className={`absolute flex flex-col items-center justify-center -translate-x-1/2 -translate-y-1/2 z-10 transition-all ${isFolded ? 'opacity-70' : ''}`} style={{ left: `${50 + (27 + pushFactor * 8) * Math.cos(angle)}%`, top: `${50 + (20 + pushFactor * 8) * Math.sin(angle) + (isHero ? 2 : (isTop ? -5 : 0))}%` }}>
              <div className="bg-emerald-500/90 text-white border-emerald-400 text-[12px] font-black px-3 py-1.5 min-w-[45px] text-center rounded-sm shadow-[0_2px_5px_rgba(0,0,0,0.5)] border leading-none backdrop-blur-sm">
                {player.currentBet}
              </div>
