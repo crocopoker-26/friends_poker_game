@@ -376,7 +376,7 @@ export default function App() {
             )}
 
             {/* Poker Table Graphic */}
-            <div className="relative w-full max-w-[800px] h-[350px] md:h-[450px] mx-auto flex items-center justify-center select-none shrink-0 mt-8 mb-12">
+            <div className="relative w-full max-w-[800px] h-[350px] md:h-[450px] mx-auto flex items-center justify-center select-none shrink-0 mt-8 mb-24">
                <div className="absolute inset-0 bg-[#2e3a4d] rounded-[160px] md:rounded-[220px] shadow-[0_20px_50px_rgba(0,0,0,0.5),inset_0_2px_6px_rgba(255,255,255,0.1)] border border-[#42546e]/30"></div>
                <div className="absolute inset-[25px] md:inset-[40px] bg-[#3e4f67] rounded-[135px] md:rounded-[180px] shadow-[inset_0_8px_20px_rgba(0,0,0,0.3)] border border-[#212b3b]"></div>
                <div className="absolute inset-[32px] md:inset-[50px] border border-[#2b3749] rounded-[128px] md:rounded-[170px] shadow-[0_1px_0_rgba(255,255,255,0.08)] pointer-events-none"></div>
@@ -509,12 +509,33 @@ export default function App() {
 
         {/* Player Actions Fixed to Bottom Right */}
         {role === 'player' && me?.status === 'playing' && gameState?.phase === 'pre_flop' && (
-          <div className="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50 flex gap-2">
-            <div className="bg-slate-900/90 border border-slate-700/60 p-2 md:p-3 rounded-2xl backdrop-blur-md shadow-[0_10px_40px_rgba(0,0,0,0.6)] flex items-end gap-2 shrink-0 max-w-[calc(100vw-2rem)] overflow-x-auto custom-scrollbar">
+          <div className="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50 flex flex-col items-end gap-2">
+            
+            {/* Quick Raise Shortcuts */}
+            {gameState.currentTurn === me.seat && (
+               <div className="flex gap-2 mr-1">
+                 {[0.5, 0.75, 1].map((pct) => {
+                    const amount = Math.floor(gameState.pot * pct);
+                    const canRaise = amount > gameState.highestBet && amount <= (me.chips + me.currentBet);
+                    return (
+                       <button
+                         key={pct}
+                         onClick={() => setRaiseAmount(amount)}
+                         disabled={!canRaise}
+                         className="px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-600/50 hover:border-indigo-500/50 text-slate-300 hover:text-indigo-300 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg text-[10px] md:text-xs font-bold tracking-wider transition-all backdrop-blur-md"
+                       >
+                         {pct * 100}%
+                       </button>
+                    );
+                 })}
+               </div>
+            )}
+
+            <div className="bg-slate-900/90 border border-slate-700/60 p-2 md:p-3 rounded-2xl backdrop-blur-md shadow-[0_10px_40px_rgba(0,0,0,0.6)] flex items-stretch gap-2 shrink-0 max-w-[calc(100vw-2rem)] overflow-x-auto custom-scrollbar">
               <button 
                 onClick={() => takeAction('fold')}
                 disabled={gameState.currentTurn !== me.seat}
-                className="py-2.5 md:py-3 px-4 md:px-6 bg-rose-900/30 hover:bg-rose-900/50 border border-rose-500/40 hover:border-rose-400/60 text-rose-300 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl font-black md:tracking-widest transition-all hover:-translate-y-0.5 hover:shadow-[0_5px_15px_rgba(225,29,72,0.2)] active:scale-95 text-xs md:text-sm whitespace-nowrap"
+                className="h-[52px] md:h-[60px] px-4 md:px-6 bg-rose-900/30 hover:bg-rose-900/50 border border-rose-500/40 hover:border-rose-400/60 text-rose-300 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl font-black md:tracking-widest transition-all hover:-translate-y-0.5 hover:shadow-[0_5px_15px_rgba(225,29,72,0.2)] active:scale-95 text-xs md:text-sm whitespace-nowrap flex items-center justify-center"
               >
                 FOLD
               </button>
@@ -522,7 +543,7 @@ export default function App() {
               <button 
                 onClick={() => takeAction('call')}
                 disabled={gameState.currentTurn !== me.seat}
-                className="py-2.5 md:py-3 px-4 md:px-6 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-600/60 hover:border-slate-400/60 text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl font-black md:tracking-widest transition-all flex flex-col items-center justify-center gap-0.5 hover:-translate-y-0.5 hover:shadow-lg active:scale-95 text-xs md:text-sm whitespace-nowrap"
+                className="h-[52px] md:h-[60px] px-4 md:px-6 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-600/60 hover:border-slate-400/60 text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl font-black md:tracking-widest transition-all flex flex-col items-center justify-center gap-0.5 hover:-translate-y-0.5 hover:shadow-lg active:scale-95 text-xs md:text-sm whitespace-nowrap min-w-[80px] md:min-w-[100px]"
               >
                 <span>{gameState.highestBet > me.currentBet ? 'CALL' : 'CHECK'}</span>
                 {gameState.highestBet > me.currentBet && (
@@ -530,7 +551,7 @@ export default function App() {
                 )}
               </button>
               
-              <div className="flex flex-col md:flex-row gap-2 shrink-0">
+              <div className="flex flex-col md:flex-row gap-2 shrink-0 items-stretch">
                 <input 
                   type="number" 
                   value={raiseAmount}
@@ -538,12 +559,12 @@ export default function App() {
                   min={gameState.highestBet + gameState.bigBlind}
                   max={me.chips + me.currentBet}
                   disabled={gameState.currentTurn !== me.seat}
-                  className="w-16 md:w-24 bg-slate-950/80 border border-slate-700/80 rounded-lg px-2 py-1.5 md:py-2 text-center text-sm md:text-base font-mono text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed shadow-inner"
+                  className="w-16 md:w-24 bg-slate-950/80 border border-slate-700/80 rounded-xl px-2 text-center text-sm md:text-base font-mono text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed shadow-inner"
                 />
                 <button 
                   onClick={() => takeAction('raise', raiseAmount)}
                   disabled={gameState.currentTurn !== me.seat || raiseAmount <= gameState.highestBet || raiseAmount > me.chips + me.currentBet}
-                  className="py-2 md:py-3 px-4 md:px-6 bg-indigo-600/90 hover:bg-indigo-500 border border-indigo-500 hover:border-indigo-400 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-black md:tracking-widest transition-all flex flex-col items-center justify-center gap-0.5 hover:-translate-y-0.5 hover:shadow-[0_5px_20px_rgba(99,102,241,0.4)] active:scale-95 text-xs md:text-sm whitespace-nowrap"
+                  className="h-[52px] md:h-[60px] px-4 md:px-6 bg-indigo-600/90 hover:bg-indigo-500 border border-indigo-500 hover:border-indigo-400 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-black md:tracking-widest transition-all flex flex-col items-center justify-center gap-0.5 hover:-translate-y-0.5 hover:shadow-[0_5px_20px_rgba(99,102,241,0.4)] active:scale-95 text-xs md:text-sm whitespace-nowrap min-w-[80px] md:min-w-[100px]"
                 >
                   <span>RAISE</span>
                   <span className="text-[10px] md:text-xs font-mono font-medium text-indigo-200">TO {raiseAmount}</span>
