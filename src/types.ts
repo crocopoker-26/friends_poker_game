@@ -11,7 +11,7 @@ export interface Player {
   hasActed: boolean;
 }
 
-export type GamePhase = 'waiting' | 'pre_flop' | 'showdown';
+export type GamePhase = 'waiting' | 'pre_flop' | 'flop' | 'turn' | 'river' | 'showdown';
 
 export interface GameState {
   phase: GamePhase;

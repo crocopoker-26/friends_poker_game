@@ -18,18 +18,22 @@ export const GameTable: React.FC<GameTableProps> = ({ gameState, children }) => 
          
          {/* Community Cards */}
          <div className="flex gap-2 p-3 rounded-2xl bg-black/20 backdrop-blur-sm border border-black/30 shadow-[inset_0_2px_8px_rgba(0,0,0,0.5)]">
-            {gameState.communityCards.length > 0 ? (
-              gameState.communityCards.map((card, i) => (
+            {Array.from({ length: 5 }).map((_, i) => {
+              const card = gameState.communityCards[i];
+              if (card) {
+                return (
                  <div key={i} className="w-[48px] h-[68px] bg-white rounded-md border border-slate-300 flex flex-col justify-between p-1 shadow-md">
                     <span className={`text-[21px] leading-none font-black ${card[1] === 'h' || card[1] === 'd' ? 'text-red-600' : 'text-slate-900'} tracking-tighter self-start pt-0.5 pl-0.5`}>{card[0]}</span>
                     <span className={`text-[26px] leading-none ${card[1] === 'h' || card[1] === 'd' ? 'text-red-600' : 'text-slate-900'} self-end pb-2 pr-1`}>{
                        { 'h': '♥', 'd': '♦', 'c': '♣', 's': '♠' }[card[1]]
                     }</span>
                  </div>
-              ))
-            ) : (
-              Array(5).fill(0).map((_, i) => <div key={i} className="w-[48px] h-[68px] rounded-md border-[2px] border-white/5 bg-black/30 shadow-inner"></div>)
-            )}
+                );
+              }
+              return (
+                <div key={i} className="w-[48px] h-[68px] rounded-md border-[2px] border-white/5 bg-black/30 shadow-inner"></div>
+              );
+            })}
          </div>
 
          {/* Pot */}

@@ -132,7 +132,7 @@ export default function App() {
                 <Users className="text-white" size={20} />
              </div>
              <h1 className="text-xl font-black text-white tracking-tight flex items-center">
-                Texas Hold'em <span className="ml-2.5 opacity-80 font-normal text-sm">| Pre-flop only</span>
+                Texas Hold'em <span className="ml-2.5 opacity-80 font-normal text-sm">| Custom Game</span>
              </h1>
           </div>
           <div className="flex items-center gap-4 text-sm text-slate-400 mt-4 lg:mt-0 font-bold">
@@ -245,7 +245,7 @@ export default function App() {
                    const player = seatedPlayers.find(p => p.seat === seatIndex);
                    const isHero = seatIndex === bottomSeat;
                    const isTop = seatIndex === topSeat;
-                   const isCurrentTurn = gameState.currentTurn === seatIndex && gameState.phase === 'pre_flop';
+                   const isCurrentTurn = gameState.currentTurn === seatIndex && ['pre_flop', 'flop', 'turn', 'river'].includes(gameState.phase);
                    const isDealer = gameState.dealerButton === seatIndex;
                    
                    return (
@@ -264,7 +264,7 @@ export default function App() {
             </GameTable>
 
             {/* Player Actions Fixed to Bottom Right */}
-            {role === 'player' && me?.status === 'playing' && gameState?.phase === 'pre_flop' && (
+            {role === 'player' && me?.status === 'playing' && ['pre_flop', 'flop', 'turn', 'river'].includes(gameState?.phase) && (
                <PlayerActions 
                  gameState={gameState}
                  me={me}
@@ -277,7 +277,7 @@ export default function App() {
         )}
 
         {/* Player Waiting Banner */}
-        {role === 'player' && (me?.status === 'approved' || me?.status === 'waiting_approval') && gameState?.phase === 'pre_flop' && me?.seat !== null && (
+        {role === 'player' && (me?.status === 'approved' || me?.status === 'waiting_approval') && ['pre_flop', 'flop', 'turn', 'river'].includes(gameState?.phase) && me?.seat !== null && (
           <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 border-t border-slate-700/50 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] z-50 backdrop-blur-xl">
             <div className="max-w-[800px] mx-auto flex items-center justify-center">
               <div className="text-indigo-400 font-bold animate-pulse py-4 text-sm md:text-base tracking-widest uppercase flex items-center gap-2">

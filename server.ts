@@ -24,7 +24,7 @@ interface Player {
   ws: WebSocket;
 }
 
-type GamePhase = 'waiting' | 'pre_flop' | 'showdown';
+type GamePhase = 'waiting' | 'pre_flop' | 'flop' | 'turn' | 'river' | 'showdown';
 
 interface GameState {
   phase: GamePhase;
@@ -130,6 +130,66 @@ function nextTurn() {
   broadcastState();
 }
 
+function startNextBettingRound() {
+  const activePlayers = Array.from(players.values()).filter(p => p.seat !== null && p.status === 'playing');
+  activePlayers.forEach(p => {
+    p.currentBet = 0;
+    p.hasActed = false;
+  });
+  gameState.highestBet = 0;
+
+  const sortedSeated = Array.from(players.values()).filter(p => p.seat !== null).sort((a, b) => a.seat! - b.seat!);
+  if (sortedSeated.length > 0) {
+    let currentDealerIndex = sortedSeated.findIndex(p => p.seat === gameState.dealerButton);
+    if (currentDealerIndex === -1) currentDealerIndex = 0;
+    
+    let nextIndex = (currentDealerIndex + 1) % sortedSeated.length;
+    let nextPlayer = sortedSeated[nextIndex];
+    
+    let loopCount = 0;
+    while (nextPlayer.status !== 'playing' && loopCount < sortedSeated.length) {
+      nextIndex = (nextIndex + 1) % sortedSeated.length;
+      nextPlayer = sortedSeated[nextIndex];
+      loopCount++;
+    }
+    
+    gameState.currentTurn = nextPlayer.seat!;
+  }
+}
+
+function dealRemainingCards() {
+  while (gameState.communityCards.length < 5) {
+    gameState.communityCards.push(gameState.deck.pop()!);
+  }
+}
+
+function advancePhase() {
+  if (gameState.phase === 'pre_flop') {
+    gameState.phase = 'flop';
+    gameState.communityCards.push(gameState.deck.pop()!, gameState.deck.pop()!, gameState.deck.pop()!);
+    startNextBettingRound();
+  } else if (gameState.phase === 'flop') {
+    gameState.phase = 'turn';
+    gameState.communityCards.push(gameState.deck.pop()!);
+    startNextBettingRound();
+  } else if (gameState.phase === 'turn') {
+    gameState.phase = 'river';
+    gameState.communityCards.push(gameState.deck.pop()!);
+    startNextBettingRound();
+  } else if (gameState.phase === 'river') {
+    evaluateShowdown();
+    return;
+  }
+  
+  const activePlaying = Array.from(players.values()).filter(p => p.seat !== null && p.status === 'playing');
+  if (activePlaying.length <= 1) {
+    dealRemainingCards();
+    evaluateShowdown();
+  } else {
+    broadcastState();
+  }
+}
+
 function checkRoundEnd() {
   const seatedPlayers = Array.from(players.values()).filter(p => p.seat !== null);
   const activePlayers = seatedPlayers.filter(p => p.status === 'playing' || p.status === 'all_in');
@@ -149,16 +209,13 @@ function checkRoundEnd() {
   const allMatched = activePlayers.every(p => p.status === 'all_in' || (p.currentBet === gameState.highestBet && p.hasActed));
   
   if (allMatched) {
-    // Pre-flop betting is over. Deal 5 cards and showdown.
-    gameState.communityCards = [
-      gameState.deck.pop()!,
-      gameState.deck.pop()!,
-      gameState.deck.pop()!,
-      gameState.deck.pop()!,
-      gameState.deck.pop()!
-    ];
-    
-    evaluateShowdown();
+    const playersAbleToAct = activePlayers.filter(p => p.status === 'playing');
+    if (playersAbleToAct.length <= 1) {
+       dealRemainingCards();
+       evaluateShowdown();
+    } else {
+       advancePhase();
+    }
   } else {
     nextTurn();
   }
@@ -349,7 +406,8 @@ async function startServer() {
 
           case 'action':
             const actionPlayer = players.get(id);
-            if (actionPlayer && actionPlayer.seat === gameState.currentTurn && actionPlayer.status === 'playing' && gameState.phase === 'pre_flop') {
+            const isPlayingPhase = ['pre_flop', 'flop', 'turn', 'river'].includes(gameState.phase);
+            if (actionPlayer && actionPlayer.seat === gameState.currentTurn && actionPlayer.status === 'playing' && isPlayingPhase) {
               actionPlayer.hasActed = true;
               if (data.action === 'fold') {
                 actionPlayer.status = 'folded';
@@ -395,7 +453,7 @@ async function startServer() {
       players.delete(id);
       
       const seatedPlayers = Array.from(players.values()).filter(p => p.seat !== null);
-      if (seatedPlayers.length < 2 && gameState.phase === 'pre_flop') {
+      if (seatedPlayers.length < 2 && ['pre_flop', 'flop', 'turn', 'river'].includes(gameState.phase)) {
         gameState.phase = 'waiting';
         gameState.winnerInfo = 'Not enough players remaining. Game reset.';
       }
