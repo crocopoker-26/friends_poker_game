@@ -21,7 +21,7 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = ({
   const angle = isTop ? (Math.PI * 3) / 2 : Math.PI / 2;
   const pushFactor = Math.abs(Math.cos(angle)); // 0 for strict top/bottom
   
-  let yOffset = isHero ? 15 : (isTop ? -2 : 0);
+  let yOffset = isHero ? 30 : (isTop ? -2 : 0);
   const cx = 50 + (42 + pushFactor * 6) * Math.cos(angle);
   const cy = 50 + (38 + pushFactor * 5) * Math.sin(angle) + yOffset;
   
