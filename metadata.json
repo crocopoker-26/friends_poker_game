@@ -1,0 +1,5 @@
+{
+  "name": "Texas Hold'em (Pre-flop)",
+  "description": "A simple 2-player Texas Hold'em game with only pre-flop betting.",
+  "requestFramePermissions": []
+}
